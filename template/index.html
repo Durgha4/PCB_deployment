@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PCB Component Verification</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    header {
+      background: linear-gradient(90deg, #1b2d6b, #4a6ef1);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      font-weight: 700;
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .upload-section {
+      padding: 20px;
+      text-align: center;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-top: 30px;
+    }
+
+    .upload-section button {
+      margin: 10px;
+      font-size: 16px;
+      padding: 10px 20px;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+    }
+
+    .upload-section button:hover {
+      transform: scale(1.1);
+    }
+
+    .image-preview {
+      height: 400px;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 20px;
+      border: 2px dashed #1b2d6b;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f4f6fc;
+      padding: 10px;
+    }
+
+    .results-preview img {
+      height: 400px;
+      width: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 2px solid #4a6ef1;
+    }
+
+    .results-preview {
+      text-align: center;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-top: 30px;
+    }
+
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #4a6ef1;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      margin: auto;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loading {
+      display: none;
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <h1><i class="fas fa-microchip"></i> PCB Component Verification</h1>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <p class="mb-3">Upload your PCB image to verify the accuracy and alignment of components, ensuring there are no missing, misaligned, or incorrect components during the high-speed assembly process. This tool can handle the complexity of dense component placements and varying sizes (from 0.4mm to 50mm).</p>
+      <button id="upload-button" class="btn btn-primary"><i class="fas fa-upload"></i> Upload PCB Image</button>
+      <button id="predict-button" class="btn btn-success"><i class="fas fa-check"></i> Verify Components</button>
+      <input type="file" id="file-input" style="display: none;" />
+      <img id="image-preview" class="image-preview" src="" alt="Upload an image to display here." />
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-preview mt-4">
+      <h5>Detection Results</h5>
+      <img id="results-preview" src="" alt="Predicted results will appear here." />
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div id="loading">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script>
+    let base64Image = "";
+
+    // Function to send the PCB image to the backend for prediction
+    function sendForPrediction(imageData) {
+      const endpoint = "/verify-pcb"; // Update this to match your API
+      $("#loading").show();
+
+      $.ajax({
+        url: endpoint,
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ image: imageData }),
+        success: function (response) {
+          $("#loading").hide();
+
+          // Display processed image with predictions
+          if (response.image) {
+            $("#results-preview").attr("src", data:image/jpeg;base64,${response.image});
+          }
+          // Show details like detected components
+          if (response.details) {
+            alert(JSON.stringify(response.details, null, 2)); // Optional: Display detected component info
+          }
+        },
+        error: function () {
+          $("#loading").hide();
+          alert("An error occurred during prediction. Please try again.");
+        },
+      });
+    }
+
+    $(document).ready(function () {
+      // Trigger file input on button click
+      $("#upload-button").click(() => {
+        $("#file-input").click();
+      });
+
+      // Handle file input change event
+      $("#file-input").change(function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            $("#image-preview").attr("src", e.target.result);
+            base64Image = e.target.result.split(",")[1]; // Extract base64 data
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Send for prediction
+      $("#predict-button").click(() => {
+        if (base64Image) {
+          sendForPrediction(base64Image);
+        } else {
+          alert("Please upload a PCB image first.");
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>

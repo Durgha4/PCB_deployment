@@ -1,0 +1,12 @@
+
+# pcb_dataset.yaml
+
+path: /content/drive/MyDrive/new_pcb/new_pcb  # Change this to the path where your dataset is stored
+
+nc: 15  # Number of classes
+names: [ 'IC', 'Resistor', 'Capacitor', 'Diode', 'Transistor', 'Inductor', 
+         'ICs', 'capacitors', 'diodes', 'fuses', 'inductors', 
+         'resistors', 'transducers', 'transformers', 'transistors' ]
+
+train: /content/drive/MyDrive/new_pcb/new_pcb/train
+val: /content/drive/MyDrive/new_pcb/new_pcb/valid
