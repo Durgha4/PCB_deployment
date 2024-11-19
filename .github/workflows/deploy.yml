@@ -53,7 +53,7 @@ jobs:
       - name: Build and Push Docker image
         run: |
           docker build -t pcb_detect .
-          docker tag traffic-detection:latest 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
+          docker tag pcb_detect:latest 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
           docker push 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
 
   # Continuous Deployment
