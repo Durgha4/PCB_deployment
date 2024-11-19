@@ -3,7 +3,7 @@ name: CI/CD Pipeline for PCB Component verification
 on:
   push:
     branches:
-      - master #"specify by using the branch which is used in github" # Trigger the pipeline on changes to the master branch
+      - master  # Trigger the pipeline on changes to the master branch
 
 jobs:
   # Continuous Integration
@@ -41,19 +41,19 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region ap-south-1  # Replace with your region
+          aws configure set region us-east-1  # Replace with your region
 
       # Step 3: Log in to AWS ECR
       - name: Log in to AWS ECR
         run: |
-         aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436948023.dkr.ecr.ap-south-1.amazonaws.com
+         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 241533114642.dkr.ecr.us-east-1.amazonaws.com
  #REPLACING WITH AWS LOGIN ID DETAILS
       # Step 4: Build and push Docker image to AWS ECR
       - name: Build and Push Docker image
         run: |
-          docker build -t traffic-detection .
-          docker tag traffic-detection:latest 886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest
-          docker push 886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest
+          docker build -t pcb_detect .
+          docker tag traffic-detection:latest 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
+          docker push 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
 
   # Continuous Deployment
   deploy_to_ec2:
@@ -78,39 +78,39 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws configure set region ap-south-1  # Replace with your region
+          aws configure set region us-east-1  # Replace with your region
 
       # Step 4: Deploy to EC2 instance
       - name: Deploy to EC2 instance
         run: |
           # Connect to EC2 and perform deployment
-          ssh -o StrictHostKeyChecking=no ubuntu@13.200.207.243 << EOF
+          ssh -o StrictHostKeyChecking=no ubuntu@3.86.163.164 << EOF
             # Stop and remove any running container on port 8080
-            CONTAINER_ID=$(docker ps -q -f "ancestor=886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest")
+            CONTAINER_ID=$(docker ps -q -f "ancestor=241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest")
             if [ ! -z "$CONTAINER_ID" ]; then
               docker stop $CONTAINER_ID
               docker rm $CONTAINER_ID
             fi
 
             # Optionally remove old images if needed
-            IMAGE_ID=$(docker images -q 886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest)
+            IMAGE_ID=$(docker images -q 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest)
             if [ ! -z "$IMAGE_ID" ]; then
               docker rmi $IMAGE_ID
             fi
 
             # Login to AWS ECR
-            aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 886436948023.dkr.ecr.ap-south-1.amazonaws.com
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 241533114642.dkr.ecr.us-east-1.amazonaws.com
             
             # Pull the Docker image from ECR
-            docker pull 886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest
+            docker pull 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
 
             # Run the Docker container on EC2
-            docker run -d -p 8080:8080 886436948023.dkr.ecr.ap-south-1.amazonaws.com/traffic-detection:latest
+            docker run -d -p 8080:8080 241533114642.dkr.ecr.us-east-1.amazonaws.com/pcb_detect:latest
           EOF
 
       # Optional: Check the running container logs (for debugging purposes)
       - name: Check Docker container logs
         run: |
-          ssh -o StrictHostKeyChecking=no ubuntu@13.200.207.243 << EOF
+          ssh -o StrictHostKeyChecking=no ubuntu@3.86.163.164 << EOF
             docker ps
           EOF
